@@ -9,8 +9,8 @@
         {
           "target": "SKILL.md",
           "source": "skills/api-engineer/SKILL.md",
-          "bytes": 6210,
-          "sha256": "3aad6087399cdd0ff76cfe4dab865b3cc7117c794f02593f03736c85c88d0cfe"
+          "bytes": 6349,
+          "sha256": "e5eabca8c8a14355ef74bfb0d4d370566cb967909ff06da968cba727bedc855f"
         }
       ]
     },
@@ -124,8 +124,8 @@
         {
           "target": "SKILL.md",
           "source": "skills/api-testing/SKILL.md",
-          "bytes": 3470,
-          "sha256": "09e4238f962138dc109497d889c55526d75f7ae67d6cb321571461c07c15820e"
+          "bytes": 3560,
+          "sha256": "42f68ba333a48fdbba06861f53e29efce260076361cd8d475dca9162e9ad7b1a"
         }
       ]
     },
@@ -200,8 +200,8 @@
         {
           "target": "reference/other_protocols.md",
           "source": "skills/collection-schema-v3/reference/other_protocols.md",
-          "bytes": 7468,
-          "sha256": "a831ddd5ffd517dd2b29da2fb7f151d4dff7e26e42154537e762b8f2fad948df"
+          "bytes": 7664,
+          "sha256": "f137e3437c808bfdf5f89b397d76bf7bd01f1d7fa2c52d28f5e3e13ee5168f7a"
         }
       ]
     },
@@ -246,6 +246,19 @@
           "source": "skills/flows/reference/flow_cli_flags.md",
           "bytes": 5698,
           "sha256": "aa75d1ad929351bc4ef37e96b2a1cfef80ec1cced0003242bd1129f00618e221"
+        }
+      ]
+    },
+    {
+      "name": "mcp-testing",
+      "plugin": "postman",
+      "description": "Use when exploring, debugging, or testing an MCP (Model Context Protocol) server from the terminal, whether the user built it or not. Inspects capabilities, calls tools, reads resources, gets prompts, signs in to OAuth servers, and saves MCP calls with pm.test assertions that run in collection runs and CI. Not for working on Postman workspaces through Postman's own MCP tools; that is postman-mcp-server. Use for requests such as \"check my MCP server's tools work\".",
+      "files": [
+        {
+          "target": "SKILL.md",
+          "source": "skills/mcp-testing/SKILL.md",
+          "bytes": 5600,
+          "sha256": "fe144d8f5eaecdcf68cc9c810a8e3ef1121f5996e61cb60179575fab136fe7d0"
         }
       ]
     },
@@ -361,13 +374,13 @@
     {
       "name": "postman-mcp-server",
       "plugin": "postman",
-      "description": "Use when working through Postman MCP tools to inspect or change workspace resources, choose a targeted operation, or handle MCP limitations. Supports hosted workflows when the CLI is unavailable and distinguishes tool completion from a usable result. Use for requests such as \"use Postman MCP to inspect this collection\".",
+      "description": "Use when working through Postman MCP tools to inspect or change workspace resources, choose a targeted operation, or handle MCP limitations. Supports hosted workflows when the CLI is unavailable and distinguishes tool completion from a usable result. Not for testing an MCP server itself; that is mcp-testing. Use for requests such as \"use Postman MCP to inspect this collection\".",
       "files": [
         {
           "target": "SKILL.md",
           "source": "skills/postman-mcp-server/SKILL.md",
-          "bytes": 4179,
-          "sha256": "238d517f8a0dd3a9acb51ad01fb214058391f948320fdb842e1ca3eafada1268"
+          "bytes": 4238,
+          "sha256": "3e9136d4b0fc2d1816971857f6b9872e9911ce94957613b18979f25d9dd710a5"
         },
         {
           "target": "references/docs.md",

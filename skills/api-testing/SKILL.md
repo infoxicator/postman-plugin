@@ -17,6 +17,7 @@ guarantee; a successful HTTP exchange alone does not establish correctness.
    | Behavior of an existing saved request | `postman collection run <collection-path> -i <request-id-name-or-path>` |
    | Reusable regression checks | `postman collection run <path-or-id>` |
    | Whether a real app's calls match the contract | `postman application test` |
+   | An MCP server's tools, resources, or prompts | `postman mcp` (see **mcp-testing**) |
 
 2. Reuse a matching request under `postman/collections/` before reconstructing
    its HTTP fields. Running it through the collection retains inherited auth,
