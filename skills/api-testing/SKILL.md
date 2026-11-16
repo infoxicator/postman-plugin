@@ -37,8 +37,9 @@ guarantee; a successful HTTP exchange alone does not establish correctness.
    against that mock does not verify the service the mock stands in for.
 5. Reuse environment resolution with `-e` and **variables**. Use a CSV/JSON
    file through `-d` for simple iteration; use **datasets** when the inputs
-   need queries, joins, or reusable views. Export reports such as
-   `-r junit,html` when **ci-integration** needs evidence beyond terminal output.
+   need queries, joins, or reusable views. Export a report when
+   **ci-integration** needs evidence beyond terminal output; it says which
+   report formats a collection supports.
 6. Use `application test` when the application's actual traffic is the subject.
    It runs an existing command, such as `--command "npx playwright test"`,
    captures its traffic, and matches it against collections. `--capture-only`

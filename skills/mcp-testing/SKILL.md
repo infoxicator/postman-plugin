@@ -75,22 +75,37 @@ postman collection request update "Sum" --collection "My Server" \
 ```
 
 Use `--url` instead of `--command` for an HTTP server; the file records it as
-`transport: sse`. Script events are `beforeConnect`, `afterConnect` (sees
-`pm.response.tools` and `pm.response.server`), `afterResponse` (sees
-`pm.response.result`) and `afterDisconnect`. A collection or folder
-definition holds the same hooks as `mcp:<event>`, and they run for every MCP
-request under it.
+`transport: sse`. Script events are `beforeConnect`, `afterConnect`,
+`afterResponse` and `afterDisconnect`. A collection or folder definition
+holds the same hooks as `mcp:<event>`, and they run for every MCP request
+under it.
+
+- `afterConnect` sees what the server lists: `pm.response.tools`,
+  `resources`, `resourceTemplates`, `prompts`, `server` and `capabilities`.
+  Put assertions on those lists here.
+- `afterResponse` sees `pm.response.result`, and runs only for a message that
+  calls `tools/call`, `resources/read` or `prompts/get`. On a list message
+  such as `tools/list` it never runs, and its tests are silently missing from
+  the assertion count.
 
 Assert on `structuredContent` only when the tool declares an `outputSchema`
 (see `tools list --json`); otherwise assert on `content`, for example
 `pm.response.result.content[0].text`. Run `postman collection lint` on the
-collection after editing it.
+collection after editing it, and check the run's assertion count matches the
+tests you wrote.
+
+Each MCP request opens its own session, and a stdio request starts its own
+server process, so no state carries from one request to the next. Write each
+request against the server's starting state. A flow that needs state from an
+earlier call, such as create then complete, needs a server that keeps state
+across sessions, or a test outside the collection.
 
 - `postman mcp tools call <tool> --request <path>` sends the saved arguments
   and runs the scripts; `--arg` or `--args` override the arguments.
 - `postman collection run <collection-path>` runs every MCP request with the
   rest of the collection. Add `--allow-stdio` when any of them starts a local
-  server. See **api-testing** for run options and **ci-integration** for CI.
+  server. See **api-testing** for run options and **ci-integration** for CI,
+  including which reports a run can write.
 
 Use command-specific `-h` for options.
 
