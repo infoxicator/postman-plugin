@@ -257,8 +257,8 @@
         {
           "target": "SKILL.md",
           "source": "skills/mcp-testing/SKILL.md",
-          "bytes": 2974,
-          "sha256": "65cf83cbe74df9e28ec64c0f63f3cd632492283c1cbc85a6d46fd164b0d16649"
+          "bytes": 3408,
+          "sha256": "87127ff0ca3a356121bce7cb9055a4c75d866df8eac4d1b3af12be7c52ea150e"
         }
       ]
     },

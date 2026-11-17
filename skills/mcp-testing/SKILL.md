@@ -31,14 +31,24 @@ the output the tool just returned only proves the server agrees with itself.
 - **The stdio command is split at every space**, so no argument can contain
   one, and a script given by absolute path cannot take arguments; use a
   relative path.
-- **Each MCP request is a new session**, and a stdio request a new server
-  process, so server state does not carry from one request to the next. Values
-  do: a script stores what one call returned with
-  `pm.collectionVariables.set()`, and a later request uses it as `{{name}}` in
-  its arguments. That is how a run chains steps, such as create then complete,
-  into one flow that CI repeats unattended. The chain also needs a server that
-  keeps its state across sessions; a stdio server restarted for every request
-  loses it, so test that flow in the server's own tests instead.
+
+## Chain requests into workflows
+
+A collection runs its requests in order, and scripts pass values between them,
+so a collection can be a workflow rather than a list of separate checks: create
+something, act on it by the id the first call returned, then check the result.
+An `afterResponse` script stores a value with
+`pm.collectionVariables.set("todoId", ...)`, and a later request uses it as
+`{{todoId}}`. The values a run captures replace hard-coded fixtures. CI then
+repeats the whole flow unattended, and nobody has to rebuild it in test code.
+
+- A variable is substituted as a string, even inside the message JSON. An
+  unquoted `{{id}}` fails the JSON check, so a numeric argument cannot be
+  chained yet.
+- Each MCP request opens a new session, so the server has to keep the state the
+  flow builds between sessions, as a long-running HTTP server does. A stdio
+  request also starts a new server process, which loses that state; run the
+  flow against an HTTP instance, or test it in the server's own tests.
 
 ## Credentials
 
