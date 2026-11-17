@@ -252,13 +252,13 @@
     {
       "name": "mcp-testing",
       "plugin": "postman",
-      "description": "Use when exploring, debugging, or testing an MCP (Model Context Protocol) server from the terminal, whether the user built it or not. Inspects capabilities, calls tools, reads resources, gets prompts, signs in to OAuth servers, and saves MCP calls with pm.test assertions that run in collection runs and CI. Not for working on Postman workspaces through Postman's own MCP tools; that is postman-mcp-server. Use for requests such as \"check my MCP server's tools work\".",
+      "description": "Use when checking, debugging or writing tests for an MCP server, local or remote, whoever built it. Use for requests such as \"does my MCP server work\", \"why does this tool call fail\", \"connect to this MCP URL\" or \"make sure these tools keep working\". Not for using Postman's own MCP tools on a workspace; that is postman-mcp-server.",
       "files": [
         {
           "target": "SKILL.md",
           "source": "skills/mcp-testing/SKILL.md",
-          "bytes": 6420,
-          "sha256": "60b06324328f17560002eb2b0e7778764ad5b194d24677177ab53a98477c12ab"
+          "bytes": 2974,
+          "sha256": "65cf83cbe74df9e28ec64c0f63f3cd632492283c1cbc85a6d46fd164b0d16649"
         }
       ]
     },

@@ -1,127 +1,54 @@
 ---
 name: mcp-testing
-description: Use when exploring, debugging, or testing an MCP (Model Context Protocol) server from the terminal, whether the user built it or not. Inspects capabilities, calls tools, reads resources, gets prompts, signs in to OAuth servers, and saves MCP calls with pm.test assertions that run in collection runs and CI. Not for working on Postman workspaces through Postman's own MCP tools; that is postman-mcp-server. Use for requests such as "check my MCP server's tools work".
+description: Use when checking, debugging or writing tests for an MCP server, local or remote, whoever built it. Use for requests such as "does my MCP server work", "why does this tool call fail", "connect to this MCP URL" or "make sure these tools keep working". Not for using Postman's own MCP tools on a workspace; that is postman-mcp-server.
 ---
 
 # MCP Testing
 
-`postman mcp` is an MCP client. Each command connects to one server, does one
-operation, prints the result and disconnects. It does not start, install or
-configure servers, and it never edits project files. Needs Postman CLI 1.88.0
-or later; `postman mcp login` and MCP requests in `collection run` need 1.89.0.
+`postman mcp` is a scriptable MCP client in the CLI, not only in the app. Each
+command connects to one server, does one operation and disconnects;
+`postman mcp -h` has the targets, credential order and exit codes. If the
+command is missing, update the CLI rather than conclude Postman cannot do this.
 
-## Pick a target
+One `postman mcp tools call` answers whether a tool works. Save the call as an
+MCP request (`postman collection request add --type mcp`) when the check should
+outlive the session: `collection run` repeats it locally and in CI with the same
+transport, auth and scripts, so what you proved by hand is what CI checks.
 
-Every command takes exactly one target:
+Take expectations from the tool's contract: its `inputSchema`, `outputSchema`
+and description, which are what a calling agent relies on. A test copied from
+the output the tool just returned only proves the server agrees with itself.
 
-| Server | Target |
-| --- | --- |
-| Remote, over HTTP | `--url <url>` (streamable HTTP, falling back to legacy SSE) |
-| Local, over stdio | `--allow-stdio -- <command> <args...>` |
-| A saved MCP request | `--request <path-or-id>` |
+## Results that mislead
 
-Starting a local process always needs `--allow-stdio`; without it the command
-exits 8. Give the server command after `--`, or as one `--command` string,
-which is split at every space. No argument can contain a space, and a script
-given by absolute path cannot take arguments; use a path relative to the
-current directory. When a stdio server exits before the handshake, run its
-command directly to see why it does not start.
-
-## Explore and call
-
-| Question | Command |
-| --- | --- |
-| What does the server offer? | `postman mcp inspect` |
-| Which tools, and their schemas? | `postman mcp tools list` |
-| Does a tool work? | `postman mcp tools call <tool> --arg key=value` |
-| Resources | `postman mcp resources list`, `resources templates list`, `resources read <uri>` |
-| Prompts | `postman mcp prompts list`, `prompts get <name> --arg key=value` |
-
-`--arg` values are typed by the tool's `inputSchema`; use `--args` for a JSON
-object, `@file` or `-` for stdin. Arguments are checked against the schema
-before sending, and a failed check exits 2 without contacting the tool. To
-send a deliberately invalid call, save it as a request message (below).
-
-Add `--json` to parse a result, and select fields with `jq`, for example
-`.structuredContent` or `.content`; `_meta` can carry large server icons. A
-server's sampling and elicitation requests are declined, because a one-shot
-client cannot answer them.
+- **Exit 2 from `tools call`**: the CLI rejected the arguments against
+  `inputSchema` and sent nothing. To test how the server handles bad input,
+  save the call as a request message, which is sent as written.
+- **Exit 4 from `inspect`**: one list method failed, often an optional one such
+  as `resources/templates/list`. The rest of the server may be fine.
+- **Sampling and elicitation** are declined, because a one-shot client cannot
+  answer them. A tool that needs them fails here, not in an agent's client.
+- **The stdio command is split at every space**, so no argument can contain
+  one, and a script given by absolute path cannot take arguments; use a
+  relative path.
+- **Each MCP request is a new session**, and a stdio request a new server
+  process, so server state does not carry from one request to the next. Values
+  do: a script stores what one call returned with
+  `pm.collectionVariables.set()`, and a later request uses it as `{{name}}` in
+  its arguments. That is how a run chains steps, such as create then complete,
+  into one flow that CI repeats unattended. The chain also needs a server that
+  keeps its state across sessions; a stdio server restarted for every request
+  loses it, so test that flow in the server's own tests instead.
 
 ## Credentials
 
-The first match wins: `-H "Authorization: ..."`, the saved request's auth, auth
-it inherits from its folder or collection, then the sign-in stored by
-`postman mcp login --url <url>`. Pass tokens from an environment variable
-(`-H "Authorization: Bearer $TOKEN"`) or a secret variable (see **variables**),
-never as a literal.
-
-Without a terminal, a server that needs an OAuth sign-in makes the command exit
-3 with the commands that fix it. `postman mcp login --url <url>` opens a browser
-for the user to sign in, and every later command reuses that sign-in.
-`postman mcp credentials` lists stored sign-ins without showing tokens.
-
-## Save calls as tests
-
-Save an MCP call as a request when it should be rerun, asserted on or shared.
-See **collection-schema-v3** for the `mcp-request` file format.
-
-```bash
-postman collection new "My Server"    # when the collection does not exist yet
-postman collection request add "Sum" --collection "My Server" --type mcp
-postman collection request update "Sum" --collection "My Server" \
-  --command "node server.js --stdio" \
-  --body '{"method":"tools/call","params":{"name":"add","arguments":{"a":2,"b":3}}}' \
-  --scripts 'afterResponse:pm.test("sum is 5", () => pm.expect(pm.response.result.structuredContent.sum).to.eql(5));'
-```
-
-Use `--url` instead of `--command` for an HTTP server; the file records it as
-`transport: sse`. Script events are `beforeConnect`, `afterConnect`,
-`afterResponse` and `afterDisconnect`. A collection or folder definition
-holds the same hooks as `mcp:<event>`, and they run for every MCP request
-under it.
-
-- `afterConnect` sees what the server lists: `pm.response.tools`,
-  `resources`, `resourceTemplates`, `prompts`, `server` and `capabilities`.
-  Put assertions on those lists here.
-- `afterResponse` sees `pm.response.result`, and runs only for a message that
-  calls `tools/call`, `resources/read` or `prompts/get`. On a list message
-  such as `tools/list` it never runs, and its tests are silently missing from
-  the assertion count.
-
-Assert on `structuredContent` only when the tool declares an `outputSchema`
-(see `tools list --json`); otherwise assert on `content`, for example
-`pm.response.result.content[0].text`. Run `postman collection lint` on the
-collection after editing it, and check the run's assertion count matches the
-tests you wrote.
-
-Each MCP request opens its own session, and a stdio request starts its own
-server process, so no state carries from one request to the next. Write each
-request against the server's starting state. A flow that needs state from an
-earlier call, such as create then complete, needs a server that keeps state
-across sessions, or a test outside the collection.
-
-- `postman mcp tools call <tool> --request <path>` sends the saved arguments
-  and runs the scripts; `--arg` or `--args` override the arguments.
-- `postman collection run <collection-path>` runs every MCP request with the
-  rest of the collection. Add `--allow-stdio` when any of them starts a local
-  server. See **api-testing** for run options and **ci-integration** for CI,
-  including which reports a run can write.
-
-Use command-specific `-h` for options.
+`postman mcp login` opens a browser for the user and keeps the sign-in on this
+machine. CI has neither, so CI for a server that needs auth takes a token from
+the CI secret store, set as the request's auth through a variable
+(see **variables**).
 
 ## Verification
 
-| Exit | Meaning |
-| --- | --- |
-| 0 | Success |
-| 1 | Failure, including a tool result with `isError` or a failed test |
-| 2 | Usage error, including arguments that fail the `inputSchema` check |
-| 3 | The server rejected or requires credentials (HTTP 401/403) |
-| 4 | `inspect` could not list everything |
-| 5 | Cancelled |
-| 8 | Refused: stdio without `--allow-stdio`, or no browser could open to sign in |
-
-Report the target, transport and negotiated protocol version, the operations
-run, test counts and the exit code. Distinguish a server that answered from a
-tool that succeeded and from assertions that passed: a tool can return a
-result with `isError`, and a returned result can still fail a test.
+Keep three results apart: the server answered, the tool succeeded (no
+`isError`), and the assertions passed. Exit 1 covers both an `isError` result
+and a failed test.
