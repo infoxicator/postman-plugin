@@ -31,9 +31,8 @@ the author's own passing tests do not establish cross-service compatibility.
    collection under `postman/collections/` supports only the `cli` reporter:
    `-r junit` or `-r html` exits 1 without running anything. Keep its report
    with `--output <folder>`, which writes a YAML run summary and per-request
-   executions to upload as a build artifact. `-r junit,html` works for a
-   v2.1 collection JSON file. `--bail` trades a complete failure inventory for
-   an earlier signal. See **api-testing** for assertion
+   executions to upload as a build artifact. `--bail` trades a complete
+   failure inventory for an earlier signal. See **api-testing** for assertion
    semantics and **ai-readiness** for score limitations.
 3. Restore declared dependencies with `postman dependency install` when tests
    use them. Choose the target deliberately: a mock checks behavior under a

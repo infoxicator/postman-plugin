@@ -21,9 +21,11 @@ the output the tool just returned only proves the server agrees with itself.
 
 ## Results that mislead
 
-- **Exit 2 from `tools call`**: the CLI rejected the arguments against
-  `inputSchema` and sent nothing. To test how the server handles bad input,
-  save the call as a request message, which is sent as written.
+- **Exit 2 from `tools call`**: the CLI rejected the arguments and sent
+  nothing. It checks only required properties, `enum` and `const` values and
+  nulls, so an argument that breaks another rule, such as `minLength`, is sent.
+  To test how the server handles bad input, save the call as a request
+  message, which is sent as written.
 - **Exit 4 from `inspect`**: one list method failed, often an optional one such
   as `resources/templates/list`. The rest of the server may be fine.
 - **Sampling and elicitation** are declined, because a one-shot client cannot
